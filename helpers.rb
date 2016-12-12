@@ -20,7 +20,7 @@ end
 
 # You can implement digest generation that suit your tasks here
 def generate_message(tasks)
-  msg = "_* Daily Standup Digest *_\n"
+  msg = "_*Daily Standup Digest*_\n"
 
   tasks.each do |assignee_id, value|
     msg << "\n*#{ value[:name] }*\n"
