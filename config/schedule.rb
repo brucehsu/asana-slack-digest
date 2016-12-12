@@ -18,3 +18,8 @@
 # end
 
 # Learn more: http://github.com/javan/whenever
+
+set :output, "#{Dir.pwd}/cron.log"
+every :weekday, :at => '12pm' do
+  command "cd #{Dir.pwd} && bundle exec ruby main.rb"
+end
