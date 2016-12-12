@@ -2,7 +2,8 @@
 def format_task(task)
   status = task.custom_fields.select { |f| f['name'] == 'Status' }.first['enum_value']
   status = status.nil? ? '' : status['name']
-  if (task.completed and Time.parse(task.completed_at) > (Date.today - 1).to_time) || status == 'Doing'
+  if (task.completed and Time.parse(task.completed_at) > (Date.today - 1).to_time) \
+      || (status == 'Doing' or status == 'Blocked')
     task = {
       name: "[#{task.memberships.first['project']['name']}]  #{task.name}",
       assignee: {
@@ -10,7 +11,7 @@ def format_task(task)
         name: task.assignee['name']
       },
       completed: task.completed,
-      status: task.completed ? 'Done' : 'Doing',
+      status: task.completed ? 'Done' : status,
     }
     return task
   end
@@ -34,6 +35,11 @@ def generate_message(tasks)
     value[:doing].each do |doing|
       msg << "- #{doing[:name]}\n"
     end unless value[:doing].empty?
+
+    msg << "# Blocked\n"
+    value[:blocked].each do |blocked|
+      msg << "- #{blocked[:name]}\n"
+    end unless value[:blocked].empty?
   end
 
   msg

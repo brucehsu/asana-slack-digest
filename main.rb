@@ -29,7 +29,8 @@ users.each do |user|
   tasks_by_assignee[user.id] = {
     name: user.name,
     completed: [],
-    doing: []
+    doing: [],
+    blocked: []
   }
 end
 
@@ -56,7 +57,7 @@ projects.each do |project|
       if task[:completed]
         tasks_by_assignee[assignee_id][:completed] << task
       else
-        tasks_by_assignee[assignee_id][:doing] << task        
+        tasks_by_assignee[assignee_id][task[:status].downcase.to_sym] << task
       end
     end
   end
