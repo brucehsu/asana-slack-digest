@@ -1,7 +1,8 @@
 # You can implement formatting that suit your tasks here
 def format_task(task)
-  status = task.custom_fields.select { |f| f['name'] == 'Status' }.first['enum_value']
-  status = status.nil? ? '' : status['name']
+  status = task.custom_fields.select { |f| f['name'] == 'Status' }.first
+  return nil if status.nil?
+  status = status['enum_value'].nil? ? '' : status['enum_value']['name']
   if (task.completed and Time.parse(task.completed_at) > (Date.today - 1).to_time) \
       || (status == 'Doing' or status == 'Blocked')
     task = {
