@@ -3,7 +3,8 @@ def format_task(task)
   status = task.custom_fields.select { |f| f['name'] == 'Status' }.first
   return nil if status.nil?
   status = status['enum_value'].nil? ? '' : status['enum_value']['name']
-  if (task.completed and Time.parse(task.completed_at) > (Date.today - 1).to_time) \
+  timestamp = (Date.today.wday == 1 ? (Date.today - 3) : (Date.today - 1)).to_time
+  if (task.completed and Time.parse(task.completed_at) > timestamp) \
       || (status == 'Doing' or status == 'Blocked')
     task = {
       name: "[#{task.memberships.first['project']['name']}]  #{task.name}",
