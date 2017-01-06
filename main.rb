@@ -2,6 +2,8 @@ require_relative "config/const"
 require_relative "helpers"
 require 'asana'
 require 'json'
+require 'celluloid'
+require 'celluloid/future'
 
 client = Asana::Client.new do |c|
   c.authentication :access_token, ASANA_ACCESS_TOKEN
@@ -34,6 +36,8 @@ users.each do |user|
   }
 end
 
+task_futures = []
+
 # Fetch tasks for each project
 projects.each do |project|
   project_tasks = client.tasks.find_by_project(projectId: project.id, per_page: ASANA_PER_PAGE)
@@ -46,40 +50,27 @@ projects.each do |project|
   end
 
   project_tasks.each do |task|
-    task = client.tasks.find_by_id(task.id)
-    task = format_task task
-
-    unless task.nil?
-      assignee_id = task[:assignee][:id]
-      tasks_by_assignee[assignee_id] ||= {}
-      tasks_by_assignee[assignee_id][:name] ||= task[:assignee][:name]
-
-      if task[:completed]
-        tasks_by_assignee[assignee_id][:completed] << task
-      else
-        tasks_by_assignee[assignee_id][task[:status].downcase.to_sym] << task
-      end
-    end
+    task_futures << Celluloid::Future.new { client.tasks.find_by_id(task.id) }
   end
 end
 
-puts "Finish generating data, now posting..."
+task_futures.each do |future|
+  task = future.value
+  puts "Phase 2: #{(Time.now - start)}s"
+  start = Time.now
+  task = format_task task
 
-client = Faraday.new(url: SLACK_WEBHOOK_BASE) do |f|
-  f.request  :url_encoded             # form-encode POST params
-  f.response :logger                  # log requests to STDOUT
-  f.adapter  Faraday.default_adapter  # make requests with Net::HTTP
-end
+  unless task.nil?
+    assignee_id = task[:assignee][:id]
+    tasks_by_assignee[assignee_id] ||= {}
+    tasks_by_assignee[assignee_id][:name] ||= task[:assignee][:name]
 
-client.post do |req|
-  req.url SLACK_INCOMING_WEBHOOK
-  req.headers['Content-type'] = 'application/json'
-  req.body = {
-    channel: SLACK_CHANNEL,
-    username: SLACK_USERNAME,
-    text: generate_message(tasks_by_assignee),
-    icon_emoji: SLACK_EMOJI
-  }.to_json
+    if task[:completed]
+      tasks_by_assignee[assignee_id][:completed] << task
+    else
+      tasks_by_assignee[assignee_id][task[:status].downcase.to_sym] << task
+    end
+  end
 end
 
 puts "Daily digest posted to channel: #{SLACK_CHANNEL}"
