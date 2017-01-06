@@ -56,7 +56,6 @@ end
 
 task_futures.each do |future|
   task = future.value
-  puts "Phase 2: #{(Time.now - start)}s"
   start = Time.now
   task = format_task task
 
