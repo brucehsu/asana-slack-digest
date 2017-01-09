@@ -90,5 +90,6 @@ client.post do |req|
     text: generate_message(tasks_by_assignee),
     icon_emoji: SLACK_EMOJI
   }.to_json
+end
 
 puts "Daily digest posted to channel: #{SLACK_CHANNEL}"
