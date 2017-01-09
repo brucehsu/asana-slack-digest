@@ -54,6 +54,7 @@ projects.each do |project|
   end
 end
 
+# Process tasks asynchronously
 task_futures.each do |future|
   task = future.value
   start = Time.now
@@ -71,5 +72,23 @@ task_futures.each do |future|
     end
   end
 end
+
+# Post message to Slack Channel
+
+client = Faraday.new(url: SLACK_WEBHOOK_BASE) do |f|
+  f.request  :url_encoded             # form-encode POST params
+  f.response :logger                  # log requests to STDOUT
+  f.adapter  Faraday.default_adapter  # make requests with Net::HTTP
+end
+
+client.post do |req|
+  req.url SLACK_INCOMING_WEBHOOK
+  req.headers['Content-type'] = 'application/json'
+  req.body = {
+    channel: SLACK_CHANNEL,
+    username: SLACK_USERNAME,
+    text: generate_message(tasks_by_assignee),
+    icon_emoji: SLACK_EMOJI
+  }.to_json
 
 puts "Daily digest posted to channel: #{SLACK_CHANNEL}"
