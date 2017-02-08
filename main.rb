@@ -2,8 +2,7 @@ require_relative "config/const"
 require_relative "helpers"
 require 'asana'
 require 'json'
-require 'celluloid'
-require 'celluloid/future'
+require 'expeditor'
 
 client = Asana::Client.new do |c|
   c.authentication :access_token, ASANA_ACCESS_TOKEN
@@ -36,7 +35,7 @@ users.each do |user|
   }
 end
 
-task_futures = []
+tasks = []
 
 # Fetch tasks for each project
 projects.each do |project|
@@ -50,13 +49,19 @@ projects.each do |project|
   end
 
   project_tasks.each do |task|
-    task_futures << Celluloid::Future.new { client.tasks.find_by_id(task.id) }
+    tasks << Expeditor::Command.new { client.tasks.find_by_id(task.id) }
   end
 end
 
+tasks.each { |task| task.start_with_retry(
+  tries: 3,
+  sleep: 3,
+  on: [Asana::Errors::RateLimitEnforced],
+) }
+
 # Process tasks asynchronously
-task_futures.each do |future|
-  task = future.value
+tasks.each do |future|
+  task = future.get
   start = Time.now
   task = format_task task
 

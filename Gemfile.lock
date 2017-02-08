@@ -6,24 +6,15 @@ GEM
       faraday_middleware (~> 0.9)
       faraday_middleware-multi_json (~> 0.0)
       oauth2 (~> 1.0)
-    celluloid (0.17.3)
-      celluloid-essentials
-      celluloid-extras
-      celluloid-fsm
-      celluloid-pool
-      celluloid-supervision
-      timers (>= 4.1.1)
-    celluloid-essentials (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-extras (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-fsm (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-pool (0.20.5)
-      timers (>= 4.1.1)
-    celluloid-supervision (0.20.6)
-      timers (>= 4.1.1)
     chronic (0.10.2)
+    concurrent-ruby (1.0.4)
+    concurrent-ruby (1.0.4-java)
+    concurrent-ruby-ext (1.0.4)
+      concurrent-ruby (= 1.0.4)
+    expeditor (0.5.0)
+      concurrent-ruby (~> 1.0.0)
+      concurrent-ruby-ext (~> 1.0.0)
+      retryable (> 1.0)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.10.1)
@@ -31,8 +22,6 @@ GEM
     faraday_middleware-multi_json (0.0.6)
       faraday_middleware
       multi_json
-    hitimes (1.2.4)
-    hitimes (1.2.4-java)
     jwt (1.5.6)
     multi_json (1.12.1)
     multi_xml (0.6.0)
@@ -44,8 +33,7 @@ GEM
       multi_xml (~> 0.5)
       rack (>= 1.2, < 3)
     rack (2.0.1)
-    timers (4.1.2)
-      hitimes
+    retryable (2.0.4)
     whenever (0.9.7)
       chronic (>= 0.6.3)
 
@@ -55,7 +43,7 @@ PLATFORMS
 
 DEPENDENCIES
   asana
-  celluloid
+  expeditor
   whenever
 
 BUNDLED WITH
