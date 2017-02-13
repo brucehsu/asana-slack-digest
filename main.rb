@@ -49,15 +49,15 @@ projects.each do |project|
   end
 
   project_tasks.each do |task|
-    tasks << Expeditor::Command.new { client.tasks.find_by_id(task.id) }
+    tasks << Expeditor::Command.new do
+      client.tasks.find_by_id(task.id) 
+    end.start_with_retry(
+      tries: 3,
+      sleep: 3,
+      on: [Asana::Errors::RateLimitEnforced],
+    )
   end
 end
-
-tasks.each { |task| task.start_with_retry(
-  tries: 3,
-  sleep: 3,
-  on: [Asana::Errors::RateLimitEnforced],
-) }
 
 # Process tasks asynchronously
 tasks.each do |future|
